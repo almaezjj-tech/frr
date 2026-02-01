@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<title>Stick Tactical War</title>
+<style>
+body{
+  background:#020617;
+  color:white;
+  text-align:center;
+  font-family:Arial;
+}
+canvas{
+  background:#020617;
+  border:2px solid #22d3ee;
+  display:block;
+  margin:20px auto;
+}
+button{
+  width:70px;height:45px;
+  margin:4px;
+  font-size:18px;
+  background:#0f172a;
+  color:white;
+  border:1px solid #22d3ee;
+  border-radius:6px;
+}
+</style>
+</head>
+<body>
+
+<h2>⚔️ Stick Tactical War</h2>
+<p>المرحلة: <span id="stage">1</span></p>
+
+<canvas id="game" width="360" height="360"></canvas>
+
+<div>
+<button onclick="move(0,-1)">⬆️</button><br>
+<button onclick="move(-1,0)">⬅️</button>
+<button onclick="attack()">⚔️</button>
+<button onclick="move(1,0)">➡️</button><br>
+<button onclick="move(0,1)">⬇️</button>
+</div>
+
+<script>
+const c = game.getContext("2d");
+const size=40, grid=9;
+let stage=1;
+
+let player={x:0,y:4,hp:5};
+let enemies=[];
+
+function spawnEnemies(){
+  enemies=[];
+  for(let i=0;i<stage;i++){
+    enemies.push({x:8,y:i*2,hp:2});
+  }
+}
+
+function drawStick(x,y,color){
+  c.strokeStyle=color;
+  c.beginPath();
+  c.arc(x,y-6,6,0,Math.PI*2); // head
+  c.moveTo(x,y);
+  c.lineTo(x,y+14); // body
+  c.moveTo(x-6,y+6);
+  c.lineTo(x+6,y+6); // arms
+  c.moveTo(x,y+14);
+  c.lineTo(x-6,y+22);
+  c.moveTo(x,y+14);
+  c.lineTo(x+6,y+22); // legs
+  c.stroke();
+}
+
+function draw(){
+  c.clearRect(0,0,360,360);
+  for(let i=0;i<grid;i++)
+    for(let j=0;j<grid;j++)
+      c.strokeRect(i*size,j*size,size,size);
+
+  drawStick(player.x*size+20,player.y*size+18,"#22d3ee");
+  enemies.forEach(e=>{
+    drawStick(e.x*size+20,e.y*size+18,"#ef4444");
+  });
+}
+
+function move(dx,dy){
+  let nx=player.x+dx, ny=player.y+dy;
+  if(nx>=0&&nx<grid&&ny>=0&&ny<grid){
+    player.x=nx; player.y=ny;
+    enemyTurn();
+    draw();
+  }
+}
+
+function attack(){
+  enemies.forEach(e=>{
+    if(Math.abs(e.x-player.x)+Math.abs(e.y-player.y)==1){
+      e.hp--;
+    }
+  });
+  enemies=enemies.filter(e=>e.hp>0);
+  if(enemies.length==0){
+    stage++;
+    document.getElementById("stage").textContent=stage;
+    spawnEnemies();
+  }
+  enemyTurn();
+  draw();
+}
+
+function enemyTurn(){
+  enemies.forEach(e=>{
+    if(e.x>player.x) e.x--;
+    else if(e.x<player.x) e.x++;
+  });
+}
+
+spawnEnemies();
+draw();
+</script>
+
+</body>
+</html>
